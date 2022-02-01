@@ -5,7 +5,7 @@ local skip = false
 local counter = 0;
 
 
-re.on_frame(function()
+re.on_pre_application_entry("UpdateBehavior", function()
     counter = counter + 1
     if not questManager then
         questManager = sdk.get_managed_singleton("snow.QuestManager")
