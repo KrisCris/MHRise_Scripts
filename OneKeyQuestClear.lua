@@ -1,12 +1,19 @@
-local hwKB = nil
 local questManager = nil
 local enemyManager = nil
-local skip = false
-local counter = 0;
+local hwKB = nil
+local killAll = false
+local ignoreQuestState = false
+local clearQuest = false
+local timer = 0.0
 
+local app_type = sdk.find_type_definition("via.Application")
+local get_elapsed_second = app_type:get_method("get_UpTimeSecond")
 
-re.on_pre_application_entry("UpdateBehavior", function()
-    counter = counter + 1
+local function get_time()
+    return get_elapsed_second:call(nil)
+end
+
+re.on_pre_application_entry("UpdateBehavior", function() 
     if not questManager then
         questManager = sdk.get_managed_singleton("snow.QuestManager")
         if not questManager then
@@ -25,61 +32,58 @@ re.on_pre_application_entry("UpdateBehavior", function()
         end
     end
 
-    -- 0: still in quest, 1: ending countdown, 8: ending animation, 16: quest over
     local endFlow = questManager:get_field("_EndFlow")
-
-    if (hwKB:call("getTrg", 35)) then
-        skip = not skip
-        log.info("[OneKeyQuestClear] Enabled: " .. tostring(skip))
+    local questStatus = questManager:get_field("_QuestStatus")
+    if endFlow == 0 and questStatus == 2 and clearQuest then
+        questManager:call("setQuestClear")
+        clearQuest = false
     end
-
-    if endFlow == 0 and skip then
-        -- 1: hunting, 2: kill, 4: capture, 16: collect
-        local questType = questManager:get_field("_QuestType")
-
-        if questManager:call("isHyakuryuQuest") then
-            -- we need a better way to clear rampage quests
-            -- questManager:call("setQuestClear")
-            KillEnemy("Boss")
-
-        elseif questManager:call("isItemTargetQuest") or questType == 4 then
-            questManager:call("setQuestClear")
-        else
-            if questManager:call("isZakoTargetQuest") then
-                KillEnemy("Zako")
-            end
-            KillEnemy("Boss")
-        end
-    end
-
-    local timer = questManager:get_field("_QuestEndFlowTimer")
-    if (endFlow == 1 or endFlow == 8) and skip and timer > 1.0 and not questManager:call("isHyakuryuQuest") then
-        questManager:set_field("_QuestEndFlowTimer", 1.0)
-        skip = not skip
-    end
-
+    
 end)
 
-function KillEnemy(type)
-    if counter % 300 == 0 then
-        local enemyCount = enemyManager:call("get" .. type .. "EnemyCount")
-        if enemyCount == nil or enemyCount == 0 then
-            log.info("[OneKeyQuestClear] Enemy not exist")
-            return nil
-        end
+re.on_draw_ui(function()
+    imgui.text("OneKeyQuestClear")
+    changed, killAll = imgui.checkbox("KillAll", killAll)
+    if imgui.button("ClearQuest") then
+        clearQuest = true
+    end
+    changed, ignoreQuestState = imgui.checkbox("IgnoreQuestState", ignoreQuestState)
 
-        for i = 0, enemyCount - 1 do
-            repeat
-                local enemy = enemyManager:call("get" .. type .. "Enemy", i);
-                if enemy == nil then
-                    log.info("[OneKeyQuestClear] Enemy "..i.." not exist")
-                    break
-                end
+    -- if changed then
+    --     enable = true
+    --     timer = get_time()
+    -- end
+end)
 
-                if enemy:call("isEnableDie", 0) and not enemy:call("checkDie") then
-                    enemy:call("dieSelf")
-                end
-            until true
-        end
+-- re.on_frame(function()
+--     if enable then
+--         local now = get_time()
+--         local delta = now - timer
+
+--         if delta > 1.0 then
+--             enable = false
+--             timer = 0.0
+--         end
+--     end
+-- end)
+
+local function pre_enemy_update(args)
+    local endFlow = questManager:get_field("_EndFlow")
+    local questType = questManager:get_field("_QuestType")
+    local questStatus = questManager:get_field("_QuestStatus")
+
+    if killAll and (endFlow == 0 or ignoreQuestState) and questType ~= 4 then
+        local enemy = sdk.to_managed_object(args[2])
+        enemy:call("dieSelf")
     end
 end
+
+local function post_enemy_update(retval)
+    return retval
+end
+
+sdk.hook(
+    sdk.find_type_definition("snow.enemy.EnemyCharacterBase"):get_method("update"),
+    pre_enemy_update,
+    post_enemy_update
+)
