@@ -1,7 +1,9 @@
-# MHRise_OneKeyQuestClear
-Press END key to clear the quest
+# My MHRise Scripts
 
-Require reframework
+Some random scripts (cheats?）
+
+Require **REFramework**
 
 ## Thanks:
+
 praydog's REFramework - https://github.com/praydog/REFramework
