@@ -11,20 +11,27 @@ end)
 
 re.on_pre_application_entry("UpdateBehavior", function ()
     if doAlchemy then
-        local fm = sdk.get_managed_singleton("snow.data.FacilityDataManager")
-        local alchemy = fm:call("getAlchemy")
         local count = numRes
-        while alchemy:call("getRemainingSlotNum") > 0 and count > 0 do
+
+        local FacilityDataManager = sdk.get_managed_singleton("snow.data.FacilityDataManager")
+        local AlchemyFacility = FacilityDataManager:call("getAlchemy")
+        local PatturnDataList = AlchemyFacility:call("getPatturnDataList"):call("ToArray")
+        -- set kamura cost to 0
+        PatturnDataList[3]:get_field("_Param"):set_field("_CostVillagePoint", 0)
+        while AlchemyFacility:call("getRemainingSlotNum") > 0 and count > 0 do
             count = count - 1
+            -- insert items for alchemy
             local dm = sdk.get_managed_singleton("snow.data.DataManager")
             local ib = dm:call("get_PlItemBox")
             ib:call("tryAddGameItem(snow.data.ContentsIdSystem.ItemId, System.Int32)", 68158506, 19)
-            local list = alchemy:call("getPatturnDataList"):call("ToArray")
-            alchemy:call("selectPatturn", list[3])
-            alchemy:call("addUsingItem", 68158506, 19)
-            alchemy:call("reserveAlchemy")
-            alchemy:call("invokeCycleMethod")
+            -- select Wisp of Mystery
+            AlchemyFacility:call("selectPatturn", PatturnDataList[3])
+            -- use the item added
+            AlchemyFacility:call("addUsingItem", 68158506, 19)
+            AlchemyFacility:call("reserveAlchemy")
+            AlchemyFacility:call("invokeCycleMethod")
         end
         doAlchemy = false
+
     end
 end)
