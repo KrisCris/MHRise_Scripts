@@ -4,14 +4,15 @@ local hwKB = nil
 local killAll = false
 local ignoreQuestState = false
 local clearQuest = false
+local perserveTarget = false
 local timer = 0.0
 
 local app_type = sdk.find_type_definition("via.Application")
 local get_elapsed_second = app_type:get_method("get_UpTimeSecond")
 
-local function get_time()
-    return get_elapsed_second:call(nil)
-end
+-- local function get_time()
+--     return get_elapsed_second:call(nil)
+-- end
 
 re.on_pre_application_entry("UpdateBehavior", function() 
     if not questManager then
@@ -47,6 +48,7 @@ re.on_draw_ui(function()
     if imgui.button("ClearQuest") then
         clearQuest = true
     end
+    changed, perserveTarget = imgui.checkbox("PerserveTarget", perserveTarget)
     changed, ignoreQuestState = imgui.checkbox("IgnoreQuestState", ignoreQuestState)
 
     -- if changed then
@@ -74,6 +76,11 @@ local function pre_enemy_update(args)
 
     if killAll and (endFlow == 0 or ignoreQuestState) and questType ~= 4 then
         local enemy = sdk.to_managed_object(args[2])
+        if perserveTarget and enemy then
+            if questManager:call("isQuestTargetEnemy", enemy:get_field("<EnemyType>k__BackingField") ,true) then
+                return
+            end
+        end
         enemy:call("dieSelf")
     end
 end
