@@ -1,14 +1,34 @@
 local questManager = nil
 local enemyManager = nil
 local hwKB = nil
-local killAll = false
-local ignoreQuestState = true
 local clearQuest = false
-local perserveTarget = false
-local kbControlAutoDisable = true
+local killAll = false
+
+
 
 local timer = 0.0
 local kbInput = false
+
+local settings = {
+    ignoreQuestState = true,
+    perserveTarget = false,
+    kbControlAutoDisable = true,
+    separateWindow = false
+}
+
+-- Persistence Functions
+local function save_settings()
+    json.dump_file("QuestClear.json", settings)
+end
+
+local function load_settings()
+    local loadedTable = json.load_file("QuestClear.json")
+    if loadedTable ~= nil then
+        settings = loadedTable
+    end
+end
+
+load_settings() -- always try to load settings on start
 
 local app_type = sdk.find_type_definition("via.Application")
 local get_elapsed_second = app_type:get_method("get_UpTimeSecond")
@@ -55,13 +75,13 @@ re.on_frame(function()
 
     if (hwKB:call("getTrg", 46)) then
         killAll = not killAll
-        if killAll and kbControlAutoDisable then
+        if killAll and settings.kbControlAutoDisable then
             timer = get_time()
             kbInput = true
         end
     end
 
-    if killAll and kbControlAutoDisable and kbInput then
+    if killAll and settings.kbControlAutoDisable and kbInput then
         local now = get_time()
         local delta = now - timer
 
@@ -69,6 +89,36 @@ re.on_frame(function()
             killAll = not killAll
             timer = 0.0
             kbInput = false
+        end
+    end
+
+    if settings.separateWindow then
+        if imgui.begin_window("OneKeyQuestClear", true, 64) then
+            imgui.text("OneKeyQuestClear - Press DEL Key")
+            changed, killAll = imgui.checkbox("KillAll", killAll)
+            if imgui.button("ClearQuest") then
+                clearQuest = true
+            end
+        
+            if imgui.checkbox("PerserveTarget", settings.perserveTarget) then
+                settings.perserveTarget =  not settings.perserveTarget
+                save_settings()
+            end
+            if imgui.checkbox("IgnoreQuestState", settings.ignoreQuestState) then
+                settings.ignoreQuestState = not settings.ignoreQuestState
+                save_settings()
+            end
+            if imgui.checkbox("KbControlAutoUnselect", settings.kbControlAutoDisable) then
+                settings.kbControlAutoDisable =  not settings.kbControlAutoDisable
+                save_settings()
+            end
+            if imgui.checkbox("ShowSeperateWindow", settings.separateWindow) then
+                settings.separateWindow =  not settings.separateWindow
+                if not settings.separateWindow then
+                    imgui.end_window()
+                end
+                save_settings()
+            end
         end
     end
 
@@ -81,14 +131,26 @@ re.on_draw_ui(function()
     if imgui.button("ClearQuest") then
         clearQuest = true
     end
-    changed, perserveTarget = imgui.checkbox("PerserveTarget", perserveTarget)
-    changed, ignoreQuestState = imgui.checkbox("IgnoreQuestState", ignoreQuestState)
-    changed, kbControlAutoDisable = imgui.checkbox("KbControlAutoUnselect", kbControlAutoDisable)
 
-    -- if changed then
-    --     enable = true
-    --     timer = get_time()
-    -- end
+    if imgui.checkbox("PerserveTarget", settings.perserveTarget) then
+        settings.perserveTarget =  not settings.perserveTarget
+        save_settings()
+    end
+    if imgui.checkbox("IgnoreQuestState", settings.ignoreQuestState) then
+        settings.ignoreQuestState = not settings.ignoreQuestState
+        save_settings()
+    end
+    if imgui.checkbox("KbControlAutoUnselect", settings.kbControlAutoDisable) then
+        settings.kbControlAutoDisable =  not settings.kbControlAutoDisable
+        save_settings()
+    end
+    if imgui.checkbox("ShowSeperateWindow", settings.separateWindow) then
+        settings.separateWindow =  not settings.separateWindow
+        if not settings.separateWindow then
+            imgui.end_window()
+        end
+        save_settings()
+    end
 end)
 
 
@@ -97,9 +159,9 @@ local function pre_enemy_update(args)
     local questType = questManager:get_field("_QuestType")
     local questStatus = questManager:get_field("_QuestStatus")
 
-    if killAll and (endFlow == 0 or ignoreQuestState) and questType ~= 4 then
+    if killAll and (endFlow == 0 or settings.ignoreQuestState) and questType ~= 4 then
         local enemy = sdk.to_managed_object(args[2])
-        if perserveTarget and enemy then
+        if settings.perserveTarget and enemy then
             if questManager:call("isQuestTargetEnemy", enemy:get_field("<EnemyType>k__BackingField") ,true) then
                 return
             end
