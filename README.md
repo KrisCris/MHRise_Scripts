@@ -9,7 +9,7 @@ These are just some *experimental* scripts testing features of reframework.
 
 Please DO NOT use these script in online play.
 
-Please DO NOT distribute or use any of the scripts in an illegal way.
+Please DO NOT distribute or use any of the scripts in any illegal way.
 
 ## Thanks:
 praydog's REFramework - https://github.com/praydog/REFramework
