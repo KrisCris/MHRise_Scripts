@@ -1,4 +1,5 @@
 -- author: github.com/krisCris
+
 -- fonts
 local FONT_NAME = "NotoSansSC-Regular.otf"
 local FONT_SIZE = 18
@@ -34,6 +35,7 @@ local settings = {
     disableOnQuestClear = true,
     breakPartsOnKill = false,
     separateWindow = false,
+    setHealthToMin = false,
     modeId = 0
 }
 
@@ -85,6 +87,11 @@ local function drawUI()
         clearQuest = true
     end
 
+    if imgui.checkbox("ForceHealthToMin", settings.setHealthToMin) then
+        settings.setHealthToMin = not settings.setHealthToMin
+        save_settings()
+    end
+
     if imgui.checkbox("DisableOnQuestClear", settings.disableOnQuestClear) then
         settings.disableOnQuestClear = not settings.disableOnQuestClear
         save_settings()
@@ -115,7 +122,6 @@ local function drawUI()
     --     imgui.tree_pop();
     -- end
 end
-
 
 load_settings()
 
@@ -150,7 +156,7 @@ end)
 
 re.on_frame(function()
     imgui.push_font(font)
-    
+
     if not hwKB then
         hwKB = sdk.get_managed_singleton("snow.GameKeyboard"):get_field("hardKeyboard") -- getting hardware keyboard manager
         if not hwKB then
@@ -170,7 +176,8 @@ re.on_frame(function()
         enableKill = not enableKill
         chatManager:call(
             "reqAddChatInfomation",
-            "<COLOR 05FFA1>ONE KEY QUESTS CLEAR:</COL>\nAUTO KILL " .. (enableKill and "<COLOR FF71CE>ENABLED</COL>" or "<COLOR 01CDFE>DISABLED</COL>") .. ".",
+            "<COLOR 05FFA1>ONE KEY QUESTS CLEAR:</COL>\nAUTO KILL " ..
+            (enableKill and "<COLOR FF71CE>ENABLED</COL>" or "<COLOR 01CDFE>DISABLED</COL>") .. ".",
             2289944406)
     end
 
@@ -179,7 +186,8 @@ re.on_frame(function()
         enablePartsBreak = not enablePartsBreak
         chatManager:call(
             "reqAddChatInfomation",
-            "<COLOR 05FFA1>ONE KEY QUESTS CLEAR:</COL>\nPARTS BREAK " .. (enablePartsBreak and "<COLOR FF71CE>ENABLED</COL>" or "<COLOR 01CDFE>DISABLED</COL>") .. ".",
+            "<COLOR 05FFA1>ONE KEY QUESTS CLEAR:</COL>\nPARTS BREAK " ..
+            (enablePartsBreak and "<COLOR FF71CE>ENABLED</COL>" or "<COLOR 01CDFE>DISABLED</COL>") .. ".",
             2289944406)
     end
 
@@ -349,17 +357,18 @@ local function pre_enemy_update(args)
                     -- attempts = 0, -- debug
                 }
             end
-            
+
 
             killIds[monsterId].min = vitalParam:call("get_Min")
-            
-            -- wait for cooldown if attempt was made 
-            if killIds[monsterId].lastAttempt ~= nil and getTime() -  killIds[monsterId].lastAttempt < 5 then
+
+            -- wait for cooldown if attempt was made
+            if killIds[monsterId].lastAttempt ~= nil and getTime() - killIds[monsterId].lastAttempt < 5 then
                 return args
             end
-    
+
             -- try kill
-            vitalParam:call("set_Current", killIds[monsterId].min + 1)
+            vitalParam:call("set_Current",
+                settings.setHealthToMin and killIds[monsterId].min or killIds[monsterId].min + 1)
             -- if vitalParam:call("get_Current") == killIds[monsterId].min then
             enemy:call("dieSelf")
             -- end
