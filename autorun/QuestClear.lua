@@ -1,4 +1,7 @@
 -- author: github.com/krisCris
+-- https://github.com/KrisCris/MHRise_Scripts/blob/main/autorun/QuestClear.lua
+-- Do not re-upload it anywhere else.
+-- 不要转载！！
 
 -- fonts
 local FONT_NAME = "NotoSansSC-Regular.otf"
@@ -18,7 +21,7 @@ local font = imgui.load_font(FONT_NAME, FONT_SIZE, CHINESE_GLYPH_RANGES)
 
 -- singletons
 local questManager = nil
-local hwKB = nil
+local onKeyTrg = nil
 local chatManager = nil
 local messageManager = nil
 
@@ -155,11 +158,13 @@ end)
 
 
 re.on_frame(function()
-    imgui.push_font(font)
-
-    if not hwKB then
-        hwKB = sdk.get_managed_singleton("snow.GameKeyboard"):get_field("hardKeyboard") -- getting hardware keyboard manager
+    if not onKeyTrg then
+        local hwKB = sdk.find_type_definition("snow.GameKeyboard.HardwareKeyboard")
         if not hwKB then
+            return
+        end
+        onKeyTrg = hwKB:get_method("getTrg(via.hid.KeyboardKey)")
+        if not onKeyTrg then
             return
         end
     end
@@ -172,7 +177,7 @@ re.on_frame(function()
     end
 
     -- DEL
-    if hwKB ~= nil and hwKB:call("getTrg", 46) then
+    if onKeyTrg and onKeyTrg:call(nil, 46) then
         enableKill = not enableKill
         chatManager:call(
             "reqAddChatInfomation",
@@ -182,7 +187,7 @@ re.on_frame(function()
     end
 
     -- END
-    if hwKB ~= nil and hwKB:call("getTrg", 35) then
+    if onKeyTrg and onKeyTrg:call(nil, 35) then
         enablePartsBreak = not enablePartsBreak
         chatManager:call(
             "reqAddChatInfomation",
@@ -192,7 +197,7 @@ re.on_frame(function()
     end
 
     -- PAGE UP
-    if hwKB ~= nil and hwKB:call("getTrg", 33) then
+    if onKeyTrg and onKeyTrg:call(nil, 33) then
         disableAll()
         if settings.modeId >= #modes then
             settings.modeId = 1
@@ -212,13 +217,14 @@ re.on_frame(function()
             imgui.end_window()
         end
     end
-    imgui.pop_font()
 end)
 
 
 re.on_draw_ui(function()
     if imgui.tree_node("OneKeyQuestClear - Press DEL Key") then
+        imgui.push_font(font)
         drawUI()
+        imgui.pop_font()
         imgui.tree_pop();
     end
 end)
