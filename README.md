@@ -2,16 +2,16 @@
 
 Some random scripts (cheats?）
 
-- autorun > the actual scripts
-- other folders > assets
+These are just some *experimental* scripts testing features of REFramework.
 
-These are just some *experimental* scripts testing features of reframework. 
+- ***THIS IS JUST A BACKUP OF SOME OF MY CODE, NOT INTENDED TO BE USED BY SOMEONE ELSE ESPECIALLY IF YOU DO NOT KNOW WHAT THE CODE IS DOING. I AM NOT RESPONSIBLE FOR ANY DAMAGE TO YOUR GAME.***
 
-Please DO NOT use these script in online play.
+- *Please DO NOT use these scripts in online play.*
 
-Please DO NOT distribute or use any of the scripts in any illegal way.
+- *Please DO NOT distribute or use any of the scripts illegally.*
 
-DO NOT re-upload it to any other places. 不要转载到其他地方去。。
+- ***RE-UPLOADING MY CODE/FILES SOMEWHERE ELSE IS STRICTLY FORBIDDEN. 不要把我的代码/文件转载到其他地方去***
 
-## Thanks:
-praydog's REFramework - https://github.com/praydog/REFramework
+## Thanks
+
+- praydog's [REFramework](https://github.com/praydog/REFramework)

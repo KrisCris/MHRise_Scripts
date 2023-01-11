@@ -1,23 +1,7 @@
--- author: github.com/krisCris
 -- https://github.com/KrisCris/MHRise_Scripts/blob/main/autorun/QuestClear.lua
--- Do not re-upload it anywhere else.
--- 不要转载！！
-
--- fonts
-local FONT_NAME = "NotoSansSC-Regular.otf"
-local FONT_SIZE = 18
-
-local CHINESE_GLYPH_RANGES = {
-    0x0020, 0x00FF, -- Basic Latin + Latin Supplement
-    0x2000, 0x206F, -- General Punctuation
-    0x3000, 0x30FF, -- CJK Symbols and Punctuations, Hiragana, Katakana
-    0x31F0, 0x31FF, -- Katakana Phonetic Extensions
-    0xFF00, 0xFFEF, -- Half-width characters
-    0x4e00, 0x9FAF, -- CJK Ideograms
-    0,
-}
-
-local font = imgui.load_font(FONT_NAME, FONT_SIZE, CHINESE_GLYPH_RANGES)
+-- Re-uploading my code/files somewhere else is strictly forbidden.
+-- 不要把我的代码/文件转载至其他地方
+---@diagnostic disable: undefined-global
 
 -- singletons
 local questManager = nil
@@ -59,7 +43,9 @@ local function load_settings()
     local loadedTable = json.load_file("QuestClear.json")
     if loadedTable ~= nil then
         settings = loadedTable
+        return
     end
+    save_settings()
 end
 
 local function clearTable()
@@ -222,9 +208,7 @@ end)
 
 re.on_draw_ui(function()
     if imgui.tree_node("OneKeyQuestClear - Press DEL Key") then
-        imgui.push_font(font)
         drawUI()
-        imgui.pop_font()
         imgui.tree_pop();
     end
 end)
@@ -238,7 +222,7 @@ local function pre_enemy_update(args)
     local monsterId = enemy:call("get_UniqueId")
 
     if enemy == nil then
-        debug = "no enemy"
+        -- debug = "no enemy"
         return args
     end
 
@@ -298,7 +282,7 @@ local function pre_enemy_update(args)
 
         local physField = enemy:call("get_PhysicalParam")
         if physField == nil then
-            debug = "no phy"
+            -- debug = "no phy"
             return args
         end
 

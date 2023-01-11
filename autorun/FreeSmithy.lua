@@ -1,3 +1,8 @@
+-- https://github.com/KrisCris/MHRise_Scripts/blob/main/autorun/FreeSmithy.lua
+-- Re-uploading my code/files somewhere else is strictly forbidden.
+-- 不要把我的代码/文件转载至其他地方
+---@diagnostic disable: undefined-global
+
 local settings = {
     NoRecipe = true,
     Free = true,

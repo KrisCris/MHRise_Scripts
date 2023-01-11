@@ -1,4 +1,31 @@
+-- https://github.com/KrisCris/MHRise_Scripts/blob/main/autorun/AutoVillage.lua
+-- Re-uploading my code/files somewhere else is strictly forbidden.
+-- 不要把我的代码/文件转载至其他地方
+---@diagnostic disable: undefined-global
+
+local settings = {
+    enabled = true
+}
+
+local function save_settings()
+    json.dump_file("AutoVillage.json", settings)
+end
+
+local function load_settings()
+    local loadedTable = json.load_file("AutoVillage.json")
+    if loadedTable ~= nil then
+        settings = loadedTable
+        return
+    end
+    save_settings()
+end
+
+load_settings()
+
 local function autoVillage()
+    if not settings.enabled then
+        return
+    end
     local progressOtomoTicketManager = sdk.get_managed_singleton("snow.progress.ProgressOtomoTicketManager")
     progressOtomoTicketManager:call("supply")
 
@@ -32,3 +59,12 @@ sdk.hook(sdk.find_type_definition("snow.VillageMapManager"):get_method("getCurre
 	autoVillage)
 
 
+re.on_draw_ui(function()
+    if imgui.tree_node("AutoVillage") then
+        if imgui.checkbox("Enabled", settings.enabled) then
+            settings.enabled = not settings.enabled
+            save_settings()
+        end
+        imgui.tree_pop();
+    end
+end)
