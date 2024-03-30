@@ -64,6 +64,7 @@ local function getTime()
 end
 
 local function drawUI()
+    local changed
     changed, settings.modeId = imgui.combo("Mode (PageUP)", settings.modeId, modes);
     if changed then
         save_settings()
@@ -306,9 +307,12 @@ local function pre_enemy_update(args)
     end
 
     -- enemy kill
+    if not questManager then
+        return args
+    end
+
     local questType = questManager:get_field("_QuestType")
     if enableKill and (questType ~= 4 or settings.modeId == 2) then
-
         local physParam = enemy:call("get_PhysicalParam")
         if not physParam then
             return args
