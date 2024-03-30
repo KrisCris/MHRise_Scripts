@@ -14,7 +14,7 @@ These are just some *experimental* and *proof of concept* scripts for testing fe
 
 - *Please DO NOT distribute or use any of the scripts illegally.*
 
-- *** REPLOADING MY CODE/FILES SOMEWHERE ELSE IS STRICTLY FORBIDDEN. 不要把我的代码/文件转载到其他地方去***
+- ***REPLOADING MY CODE/FILES SOMEWHERE ELSE IS STRICTLY FORBIDDEN. 请不要 把这里的代码/文件 转载至 其他地方。***
 
 ## Thanks
 
